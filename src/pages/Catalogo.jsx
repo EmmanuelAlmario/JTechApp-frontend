@@ -4,8 +4,11 @@ import { toast } from 'sonner';
 import Navbar from '../components/Navbar';
 import api from '../api/axios';
 import ProductCard from '../components/ProductCard';
+import { useAuth } from '../context/AuthContext';
 
 export default function Catalogo() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [marcas, setMarcas] = useState([]);
@@ -39,6 +42,17 @@ export default function Catalogo() {
   }, [busqueda]);
 
   const agregarAlCarrito = () => {
+    if (!user) {
+      toast.error('Debes iniciar sesión para agregar al carrito');
+      navigate('/login');
+      return;
+    }
+
+    if (user.rol !== 'CLIENTE') {
+      toast.error('Solo los clientes pueden agregar productos al carrito');
+      return;
+    }
+
     if (!varianteSeleccionada) {
       toast.error('Selecciona una variante');
       return;
