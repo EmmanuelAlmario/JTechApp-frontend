@@ -88,6 +88,12 @@ const Register = () => {
             Inicia sesión
           </Link>
         </p>
+        <p className="text-center text-sm text-[#000000] mt-4">
+            Volver a inicio?{' '}
+            <Link to="/" className="font-bold hover:underline">
+              Inicio
+            </Link>
+        </p>
       </div>
     </div>
   );

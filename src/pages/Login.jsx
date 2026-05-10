@@ -93,11 +93,17 @@ const Login = () => {
             {loading ? 'Cargando...' : 'Entrar'}
           </button>
             <p className="text-center text-sm text-[#000000] mt-4">
-            ¿No tienes cuenta?{' '}
-          <Link to="/register" className="font-bold hover:underline">
-          Regístrate
-          </Link>
-</p>
+              ¿No tienes cuenta?{' '}
+              <Link to="/register" className="font-bold hover:underline">
+                Regístrate
+              </Link>
+            </p>
+            <p className="text-center text-sm text-[#000000] mt-4">
+              Volver a inicio?{' '}
+              <Link to="/" className="font-bold hover:underline">
+                Inicio
+              </Link>
+            </p>
         </form>
       </div>
     </div>
