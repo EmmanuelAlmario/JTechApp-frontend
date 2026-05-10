@@ -90,7 +90,7 @@ export default function Home() {
       <footer className="border-t border-gray-100 px-8 py-12">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <span className="text-2xl font-bold text-black">JTECH</span>
-          <p className="text-gray-400 text-sm">© 2024 JTech. Todos los derechos reservados.</p>
+          <p className="text-gray-400 text-sm">© 2026 JTech. Todos los derechos reservados. By Emmanuel Almario</p>
           <div className="flex gap-6">
             <span className="text-sm text-gray-400 hover:text-black cursor-pointer transition-colors">Instagram</span>
             <span className="text-sm text-gray-400 hover:text-black cursor-pointer transition-colors">Twitter</span>
