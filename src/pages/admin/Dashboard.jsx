@@ -5,6 +5,7 @@ import Aurora from '../../components/ReactBits/Aurora';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
 import AdminSidebar from '../../components/AdminSidebar';
+import CountUp from '../../components/ReactBits/CountUp';
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
