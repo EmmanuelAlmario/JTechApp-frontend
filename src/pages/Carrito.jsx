@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Trash2 } from 'lucide-react';
 import Navbar from '../components/Navbar';
+import { toast } from 'sonner';
 
 export default function Carrito() {
   const [carrito, setCarrito] = useState([]);
@@ -13,9 +14,17 @@ export default function Carrito() {
   }, []);
 
   const actualizar = (varianteId, cantidad) => {
-    const nuevo = carrito.map(item =>
-      item.varianteId === varianteId ? { ...item, cantidad } : item
-    ).filter(item => item.cantidad > 0);
+    const item = carrito.find(i => i.varianteId === varianteId);
+  
+    if (cantidad > item.stock) {
+      toast.error(`Stock insuficiente — solo hay ${item.stock} unidades`);
+      return;
+    }
+  
+    const nuevo = carrito.map(i =>
+      i.varianteId === varianteId ? { ...i, cantidad } : i
+    ).filter(i => i.cantidad > 0);
+  
     setCarrito(nuevo);
     localStorage.setItem('carrito', JSON.stringify(nuevo));
   };
@@ -71,7 +80,7 @@ export default function Carrito() {
                     >
                       -
                     </button>
-                    <span className="w-6 text-center text-sm font-medium">{item.cantidad}</span>
+                    <span className="w-6 text-center text-sm font-medium bg-gray-50/30">{item.cantidad}</span>
                     <button
                       onClick={() => actualizar(item.varianteId, item.cantidad + 1)}
                       className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:border-black transition-colors bg-green-400"

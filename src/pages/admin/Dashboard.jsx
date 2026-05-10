@@ -83,7 +83,12 @@ export default function Dashboard() {
                 className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/10"
               >
                 <p className="text-white/40 text-xs mb-2">{stat.label}</p>
-                <p className="text-3xl font-bold text-white">{stat.value ?? 0}</p>
+                <CountUp
+                  from={0}
+                  to={Number(stat.value) || 0}
+                  duration={1.5}
+                  className="text-3xl font-bold text-white"
+                />
               </motion.div>
             ))}
           </div>

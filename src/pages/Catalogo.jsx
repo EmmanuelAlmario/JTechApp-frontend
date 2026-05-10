@@ -43,8 +43,16 @@ export default function Catalogo() {
       toast.error('Selecciona una variante');
       return;
     }
+  
     const carrito = JSON.parse(localStorage.getItem('carrito') || '[]');
     const existe = carrito.find(i => i.varianteId === varianteSeleccionada.id);
+    const cantidadActual = existe ? existe.cantidad : 0;
+  
+    if (cantidadActual >= varianteSeleccionada.stock) {
+      toast.error(`Stock insuficiente — solo hay ${varianteSeleccionada.stock} unidades`);
+      return;
+    }
+  
     if (existe) {
       existe.cantidad += 1;
     } else {
@@ -54,6 +62,7 @@ export default function Catalogo() {
         variante: varianteSeleccionada.nombre,
         precio: varianteSeleccionada.precio,
         cantidad: 1,
+        stock: varianteSeleccionada.stock,
         imagen: productoSeleccionado.imagenes?.[0]?.url
       });
     }
