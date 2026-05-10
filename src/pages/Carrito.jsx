@@ -80,7 +80,7 @@ export default function Carrito() {
                     >
                       -
                     </button>
-                    <span className="w-6 text-center text-sm font-medium bg-gray-50/30">{item.cantidad}</span>
+                    <span className="w-6 text-center text-sm text-black font-medium bg-gray-50/30">{item.cantidad}</span>
                     <button
                       onClick={() => actualizar(item.varianteId, item.cantidad + 1)}
                       className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:border-black transition-colors bg-green-400"

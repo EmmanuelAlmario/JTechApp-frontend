@@ -31,7 +31,7 @@ export default function Dashboard() {
       api.get('/dashboard/stats').then(res => setStats(res.data));
       api.get('/productos/admin').then(res => setProductos(res.data));
       api.get('/usuarios').then(res => setUsuarios(res.data));
-    }, 10000);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, []);
