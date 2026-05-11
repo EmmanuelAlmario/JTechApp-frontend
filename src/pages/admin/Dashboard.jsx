@@ -40,7 +40,7 @@ export default function Dashboard() {
   if (!loaded) return (
     <div className="relative min-h-screen">
       <div className="fixed inset-0 z-0">
-        <Aurora colorStops={["#000000", "#1a1a2e", "#16213e"]} speed={0.5} amplitude={0.8} />
+        <Iridescence color={"#3e3e3e"}/>
       </div>
       <div className="relative z-10 flex min-h-screen">
         <AdminSidebar />
@@ -54,7 +54,7 @@ export default function Dashboard() {
   return (
     <div className="relative min-h-screen">
       <div className="fixed inset-0 z-0">
-        <Iridescence />
+        <Iridescence color={"#3e3e3e"}/>
       </div>
 
       <div className="relative z-10 flex min-h-screen">
