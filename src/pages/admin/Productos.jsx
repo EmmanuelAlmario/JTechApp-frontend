@@ -14,12 +14,15 @@ export default function Productos() {
   const [subcategorias, setSubcategorias] = useState([]);
   const [modal, setModal] = useState(false);
   const [modalEditar, setModalEditar] = useState(false);
+  const [modalEditarVariante, setModalEditarVariante] = useState(false);
   const [productoEditando, setProductoEditando] = useState(null);
+  const [varianteEditando, setVarianteEditando] = useState(null);
   const [form, setForm] = useState({
     nombre: '', descripcion: '', categoriaId: '', subcategoriaId: '', marcaId: '',
     activo: true, variantes: [], imagenes: []
   });
   const [formEditar, setFormEditar] = useState({ nombre: '', descripcion: '' });
+  const [formVariante, setFormVariante] = useState({ nombre: '', precio: '', stock: '', sku: '' });
   const [variante, setVariante] = useState({ nombre: '', precio: '', stock: '', sku: '' });
   const [imagen, setImagen] = useState({ url: '', esPrincipal: false });
   const { user } = useAuth();
@@ -63,8 +66,8 @@ export default function Productos() {
     try {
       await api.put(`/productos/${productoEditando.id}`, formEditar);
       toast.success('Producto actualizado');
-      setModalEditar(false);
-      setProductoEditando(null);
+      const res = await api.get(`/productos/${productoEditando.id}`);
+      setProductoEditando(res.data);
       cargarDatos();
     } catch {
       toast.error('Error al actualizar producto');
@@ -77,9 +80,50 @@ export default function Productos() {
     setModalEditar(true);
   };
 
+  const abrirEditarVariante = (v) => {
+    setVarianteEditando(v);
+    setFormVariante({ nombre: v.nombre, precio: v.precio, stock: v.stock, sku: v.sku });
+    setModalEditarVariante(true);
+  };
+
+  const handleEditarVariante = async (e) => {
+    e.preventDefault();
+    try {
+      await api.put(`/productos/variantes/${varianteEditando.id}`, {
+        nombre: formVariante.nombre,
+        precio: Number(formVariante.precio),
+        stock: Number(formVariante.stock),
+        sku: formVariante.sku
+      });
+      toast.success('Variante actualizada');
+      setModalEditarVariante(false);
+      const res = await api.get(`/productos/${productoEditando.id}`);
+      setProductoEditando(res.data);
+      cargarDatos();
+    } catch {
+      toast.error('Error al actualizar variante');
+    }
+  };
+
+  const eliminarVariante = async (varianteId) => {
+    try {
+      await api.delete(`/productos/variantes/${varianteId}`);
+      toast.success('Variante eliminada');
+      const res = await api.get(`/productos/${productoEditando.id}`);
+      setProductoEditando(res.data);
+      cargarDatos();
+    } catch {
+      toast.error('Error al eliminar variante');
+    }
+  };
+
   const toggleActivo = async (id) => {
-    await api.patch(`/productos/${id}/toggle-activo`);
-    cargarDatos();
+    try {
+      await api.patch(`/productos/${id}/toggle-activo`);
+      cargarDatos();
+    } catch {
+      toast.error('Error al cambiar estado');
+    }
   };
 
   const eliminar = async (id) => {
@@ -160,7 +204,7 @@ export default function Productos() {
         </div>
       </div>
 
-      {/* Modal crear producto */}
+      {/* Modal crear */}
       <AnimatePresence>
         {modal && (
           <motion.div
@@ -308,7 +352,7 @@ export default function Productos() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
             onClick={() => setModalEditar(false)}
           >
             <motion.div
@@ -316,10 +360,12 @@ export default function Productos() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               onClick={e => e.stopPropagation()}
-              className="bg-[#1a1a2e] rounded-3xl p-8 w-full max-w-md"
+              className="bg-[#1a1a2e] rounded-3xl p-8 w-full max-w-lg my-8"
             >
-              <h2 className="text-2xl font-bold text-white mb-6">Editar producto</h2>
-              <form onSubmit={handleEditar} className="flex flex-col gap-4">
+              <h2 className="text-2xl font-bold text-white mb-2">Editar producto</h2>
+              <p className="text-white/40 text-sm mb-6">{productoEditando?.nombre}</p>
+
+              <form onSubmit={handleEditar} className="flex flex-col gap-4 mb-8">
                 <div>
                   <label className="text-xs text-white/40 mb-1 block">Nombre</label>
                   <input
@@ -337,11 +383,82 @@ export default function Productos() {
                     className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-white/30"
                   />
                 </div>
-                <div className="flex gap-3 mt-2">
+                <div className="flex gap-3">
                   <button type="submit" className="flex-1 bg-white text-black py-3 rounded-xl text-sm font-medium">
                     Guardar cambios
                   </button>
                   <button type="button" onClick={() => setModalEditar(false)} className="px-6 py-3 rounded-xl border border-white/10 text-sm text-white/60">
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+
+              <div className="border-t border-white/10 pt-6">
+                <h3 className="text-sm font-semibold text-white mb-4">Variantes</h3>
+                <div className="flex flex-col gap-3">
+                  {productoEditando?.variantes?.map(v => (
+                    <div key={v.id} className="bg-white/5 rounded-xl px-4 py-3 flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-white font-medium">{v.nombre}</p>
+                        <p className="text-xs text-white/40">${v.precio?.toLocaleString()} — Stock: {v.stock}</p>
+                      </div>
+                      <div className="flex gap-3">
+                        <button onClick={() => abrirEditarVariante(v)} className="text-white/40 hover:text-white transition-colors">
+                          <Pencil size={15} />
+                        </button>
+                        <button onClick={() => eliminarVariante(v.id)} className="text-white/40 hover:text-red-400 transition-colors">
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal editar variante */}
+      <AnimatePresence>
+        {modalEditarVariante && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setModalEditarVariante(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-[#1a1a2e] rounded-3xl p-8 w-full max-w-md"
+            >
+              <h2 className="text-2xl font-bold text-white mb-6">Editar variante</h2>
+              <form onSubmit={handleEditarVariante} className="flex flex-col gap-4">
+                {[
+                  { label: 'Nombre', key: 'nombre' },
+                  { label: 'Precio', key: 'precio' },
+                  { label: 'Stock', key: 'stock' },
+                  { label: 'SKU', key: 'sku' },
+                ].map(f => (
+                  <div key={f.key}>
+                    <label className="text-xs text-white/40 mb-1 block">{f.label}</label>
+                    <input
+                      required
+                      value={formVariante[f.key]}
+                      onChange={e => setFormVariante({ ...formVariante, [f.key]: e.target.value })}
+                      className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-white/30"
+                    />
+                  </div>
+                ))}
+                <div className="flex gap-3 mt-2">
+                  <button type="submit" className="flex-1 bg-white text-black py-3 rounded-xl text-sm font-medium">
+                    Guardar
+                  </button>
+                  <button type="button" onClick={() => setModalEditarVariante(false)} className="px-6 py-3 rounded-xl border border-white/10 text-sm text-white/60">
                     Cancelar
                   </button>
                 </div>
