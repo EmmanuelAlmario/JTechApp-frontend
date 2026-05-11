@@ -6,7 +6,6 @@ import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
 import AdminSidebar from '../../components/AdminSidebar';
 import CountUp from '../../components/ReactBits/CountUp';
-import Iridescence from '../../components/ReactBits/Iridescence';
 
 export default function Dashboard() {
   const [stats, setStats] = useState(null);
@@ -40,7 +39,7 @@ export default function Dashboard() {
   if (!loaded) return (
     <div className="relative min-h-screen">
       <div className="fixed inset-0 z-0">
-        <Iridescence color={"#3e3e3e"}/>
+        <Aurora colorStops={["#000000", "#1a1a2e", "#16213e"]} speed={0.5} amplitude={0.8} />
       </div>
       <div className="relative z-10 flex min-h-screen">
         <AdminSidebar />
@@ -54,7 +53,7 @@ export default function Dashboard() {
   return (
     <div className="relative min-h-screen">
       <div className="fixed inset-0 z-0">
-        <Iridescence color={"#3e3e3e"}/>
+        <Aurora colorStops={["#000000", "#1a1a2e", "#16213e"]} speed={0.5} amplitude={0.8} />
       </div>
 
       <div className="relative z-10 flex min-h-screen">
