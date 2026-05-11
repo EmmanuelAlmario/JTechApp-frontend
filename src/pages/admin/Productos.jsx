@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { Trash2, Plus, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Trash2, Plus, ToggleLeft, ToggleRight, Pencil } from 'lucide-react';
 import Aurora from '../../components/ReactBits/Aurora';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
 import AdminSidebar from '../../components/AdminSidebar';
@@ -13,15 +12,16 @@ export default function Productos() {
   const [categorias, setCategorias] = useState([]);
   const [marcas, setMarcas] = useState([]);
   const [subcategorias, setSubcategorias] = useState([]);
-  const [productoSeleccionado, setProductoSeleccionado] = useState(null);
   const [modal, setModal] = useState(false);
+  const [modalEditar, setModalEditar] = useState(false);
+  const [productoEditando, setProductoEditando] = useState(null);
   const [form, setForm] = useState({
     nombre: '', descripcion: '', categoriaId: '', subcategoriaId: '', marcaId: '',
     activo: true, variantes: [], imagenes: []
   });
+  const [formEditar, setFormEditar] = useState({ nombre: '', descripcion: '' });
   const [variante, setVariante] = useState({ nombre: '', precio: '', stock: '', sku: '' });
   const [imagen, setImagen] = useState({ url: '', esPrincipal: false });
-  const navigate = useNavigate();
   const { user } = useAuth();
 
   useEffect(() => {
@@ -58,15 +58,38 @@ export default function Productos() {
     }
   };
 
+  const handleEditar = async (e) => {
+    e.preventDefault();
+    try {
+      await api.put(`/productos/${productoEditando.id}`, formEditar);
+      toast.success('Producto actualizado');
+      setModalEditar(false);
+      setProductoEditando(null);
+      cargarDatos();
+    } catch {
+      toast.error('Error al actualizar producto');
+    }
+  };
+
+  const abrirEditar = (producto) => {
+    setProductoEditando(producto);
+    setFormEditar({ nombre: producto.nombre, descripcion: producto.descripcion });
+    setModalEditar(true);
+  };
+
   const toggleActivo = async (id) => {
     await api.patch(`/productos/${id}/toggle-activo`);
     cargarDatos();
   };
 
   const eliminar = async (id) => {
-    await api.delete(`/productos/${id}`);
-    toast.success('Producto eliminado');
-    cargarDatos();
+    try {
+      await api.delete(`/productos/${id}`);
+      toast.success('Producto eliminado');
+      cargarDatos();
+    } catch {
+      toast.error('Error al eliminar producto');
+    }
   };
 
   const agregarVariante = () => {
@@ -81,15 +104,6 @@ export default function Productos() {
     setImagen({ url: '', esPrincipal: false });
   };
 
-  const navItems = [
-    { label: 'Dashboard', path: '/admin/dashboard' },
-    { label: 'Productos', path: '/admin/productos' },
-    { label: 'Categorías', path: '/admin/categorias' },
-    { label: 'Marcas', path: '/admin/marcas' },
-    { label: 'Órdenes', path: '/admin/ordenes' },
-    ...(user?.rol === 'SUPER_ADMIN' ? [{ label: 'Administradores', path: '/admin/administradores' }] : [])
-  ];
-
   return (
     <div className="relative min-h-screen">
       <div className="fixed inset-0 z-0">
@@ -97,14 +111,10 @@ export default function Productos() {
       </div>
 
       <div className="relative z-10 flex min-h-screen">
-        {/* Sidebar */}
         <AdminSidebar />
-        
-        {/* Contenido */}
+
         <div className="flex-1 p-10">
           <div className="flex items-center justify-between mb-10">
-                        
-            
             <h1 className="text-4xl font-bold text-white">Productos</h1>
             <button
               onClick={() => setModal(true)}
@@ -135,9 +145,14 @@ export default function Productos() {
                       : <ToggleLeft size={24} className="text-white/40" />
                     }
                   </button>
-                  <button onClick={() => eliminar(producto.id)}>
-                    <Trash2 size={18} className="text-white/40 hover:text-red-400 transition-colors" />
-                  </button>
+                  <div className="flex gap-3">
+                    <button onClick={() => abrirEditar(producto)}>
+                      <Pencil size={16} className="text-white/40 hover:text-white transition-colors" />
+                    </button>
+                    <button onClick={() => eliminar(producto.id)}>
+                      <Trash2 size={16} className="text-white/40 hover:text-red-400 transition-colors" />
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -164,7 +179,6 @@ export default function Productos() {
             >
               <h2 className="text-2xl font-bold text-white mb-6">Nuevo producto</h2>
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-
                 {[
                   { label: 'Nombre', key: 'nombre', type: 'text' },
                   { label: 'Descripción', key: 'descripcion', type: 'text' },
@@ -221,7 +235,6 @@ export default function Productos() {
                   </select>
                 </div>
 
-                {/* Variantes */}
                 <div className="border border-white/10 rounded-xl p-4">
                   <h3 className="text-sm font-medium text-white mb-3">Variantes</h3>
                   <div className="grid grid-cols-2 gap-2 mb-2">
@@ -248,7 +261,6 @@ export default function Productos() {
                   ))}
                 </div>
 
-                {/* Imágenes */}
                 <div className="border border-white/10 rounded-xl p-4">
                   <h3 className="text-sm font-medium text-white mb-3">Imágenes</h3>
                   <div className="flex gap-2 mb-2">
@@ -276,17 +288,60 @@ export default function Productos() {
                 </div>
 
                 <div className="flex gap-3 mt-2">
-                  <button
-                    type="submit"
-                    className="flex-1 bg-white text-black py-3 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors"
-                  >
+                  <button type="submit" className="flex-1 bg-white text-black py-3 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors">
                     Crear producto
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setModal(false)}
-                    className="px-6 py-3 rounded-xl border border-white/10 text-sm text-white/60 hover:text-white transition-colors"
-                  >
+                  <button type="button" onClick={() => setModal(false)} className="px-6 py-3 rounded-xl border border-white/10 text-sm text-white/60 hover:text-white transition-colors">
+                    Cancelar
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal editar producto */}
+      <AnimatePresence>
+        {modalEditar && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setModalEditar(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-[#1a1a2e] rounded-3xl p-8 w-full max-w-md"
+            >
+              <h2 className="text-2xl font-bold text-white mb-6">Editar producto</h2>
+              <form onSubmit={handleEditar} className="flex flex-col gap-4">
+                <div>
+                  <label className="text-xs text-white/40 mb-1 block">Nombre</label>
+                  <input
+                    required
+                    value={formEditar.nombre}
+                    onChange={e => setFormEditar({ ...formEditar, nombre: e.target.value })}
+                    className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-white/30"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-white/40 mb-1 block">Descripción</label>
+                  <input
+                    value={formEditar.descripcion}
+                    onChange={e => setFormEditar({ ...formEditar, descripcion: e.target.value })}
+                    className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-white/30"
+                  />
+                </div>
+                <div className="flex gap-3 mt-2">
+                  <button type="submit" className="flex-1 bg-white text-black py-3 rounded-xl text-sm font-medium">
+                    Guardar cambios
+                  </button>
+                  <button type="button" onClick={() => setModalEditar(false)} className="px-6 py-3 rounded-xl border border-white/10 text-sm text-white/60">
                     Cancelar
                   </button>
                 </div>
