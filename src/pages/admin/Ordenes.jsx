@@ -50,7 +50,7 @@ export default function Ordenes() {
   return (
     <div className="relative min-h-screen">
       <div className="fixed inset-0 z-0">
-        <Aurora colorStops={["#000000", "#1a1a2e", "#16213e"]} speed={0.5} amplitude={0.8} />
+        <Aurora colorStops={["#000000", "#7A87FF", "#7D80AD"]} speed={0.5} amplitude={0.8} />
       </div>
 
       <div className="relative z-10 flex min-h-screen">
