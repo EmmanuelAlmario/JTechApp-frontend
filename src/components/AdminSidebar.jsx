@@ -23,7 +23,7 @@ export default function AdminSidebar() {
   };
 
   return (
-    <div className="w-64 min-h-screen border-r border-white/10 p-6 flex flex-col backdrop-blur-md bg-white/5">
+    <div className="w-64 min-h-screen border-r border-white/10 p-6 flex flex-col bg-white/5">
       
       <div className="mb-10">
         <ShinyText
